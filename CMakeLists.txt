@@ -94,6 +94,12 @@ find_package(catkin REQUIRED COMPONENTS
 #   cfg/DynReconf2.cfg
 # )
 find_package (OpenCV 3.2.0 REQUIRED)
+
+#
+set (G2O_LIBS g2o_cli g2o_ext_freeglut_minimal g2o_simulator g2o_solver_slam2d_linear g2o_types_icp g2o_types_slam2d g2o_core g2o_interface g2o_solver_csparse g2o_solver_structure_only g2o_types_sba g2o_types_slam3d g2o_csparse_extension g2o_opengl_helper g2o_solver_dense g2o_stuff g2o_types_sclam2d g2o_viewer g2o_parser g2o_solver_pcg g2o_types_data g2o_types_sim3 cxsparse)
+set(G2O_ROOT "/home/csw/g2o_ws/g2o") # FindG2O.cmake
+list(APPEND CMAKE_MODULE_PATH "/home/csw/g2o_ws/g2o/cmake_modules")
+find_package( G2O REQUIRED)
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -121,9 +127,11 @@ include_directories(
   include
   #${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  ${G2O_INCLUDE_DIR}
 )
+
 add_executable(feature_pub src/feature_pub.cpp)
-target_link_libraries(feature_pub ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(feature_pub ${catkin_LIBRARIES} ${OpenCV_LIBS} ${G2O_LIBS})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}

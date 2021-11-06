@@ -1,3 +1,4 @@
+#pragma once
 #include "vision/choi_cv.h"
 #include <iostream>
 
@@ -8,39 +9,85 @@ namespace choi {
     else return false;
   }
 
-  //// 템플릿 및 카메라 프레임 특징점 추출
+  //feature extract from input image using ORB
   void extract(const cv::Mat& img, cv::Mat& des, std::vector<cv::KeyPoint>& kp) {
       const static auto& orb = cv::ORB::create();
      orb->detectAndCompute(img, cv::noArray(), kp, des);
   }
 
+  //feature sort rule
   void sort_kp_desc(std::vector<cv::KeyPoint>& kp){
     std::sort(kp.begin(), kp.end(),cmp_resp_desc);
   }
 
 
+//frame class//////////////////////////////////////////////////////////////////
   frame::frame(cv::Mat img1, cv::Mat img2){
     img_l = img1; img_r = img2;
   }
 
+  //Feature extract from left and right images using ORB
   void frame::feature_extract(){
     const static auto& orb = cv::ORB::create();
     orb->detectAndCompute(img_l, cv::noArray(), kp_l, des_l);
     orb->detectAndCompute(img_r, cv::noArray(), kp_r, des_r);
   }
 
+  //left and right image feature matching
   void frame::feature_match(){
-    cv::Ptr<cv::DescriptorMatcher> matcher = cv::BFMatcher::create(cv::NORM_HAMMING);
+    ROS_INFO("debug feature");
+    cv::Ptr<cv::DescriptorMatcher> matcher = cv::BFMatcher::create(cv::NORM_HAMMING); //need improve BF not efficient
+    ROS_INFO("debug match");
     matcher->match(des_l,des_r,matches);
+    ROS_INFO("debug feature end");
   }
 
+  //Sort matches Descending
   void frame::sort_match(){
     std::sort(matches.begin(),matches.end());
-    std::vector<cv::DMatch> good(matches.begin(), matches.begin() + 5);
-    good_matches = good;
-
+    std::vector<cv::DMatch> good(matches.begin(), matches.begin() + 20);
+    good_matches = good; //need improve
   }
 
+  //Calculate 3D coordinate using Triangulation
+  void frame::triangulation(){
+    //camera information  //after change to define or member
+    double base_line_meter = 0.54;
+    double cam_pix_size = 4.65 * 0.000001;
+    double fx = 7.215377 * 100;
+    double fy = fx;
+    double cx = 6.095593*100;
+    double cy = 1.728540*100;
+
+    double base_line_pix = base_line_meter / cam_pix_size;
+    int left_idx, right_idx;
+    float left_x, left_y, right_x;
+
+    for(int i = 0; i < good_matches.size(); i++){
+      left_idx  = good_matches[i].queryIdx;
+      right_idx = good_matches[i].trainIdx;
+
+      left_x  = kp_l[static_cast<unsigned long>(left_idx)].pt.x;
+      left_y  = kp_l[static_cast<unsigned long>(left_idx)].pt.y;
+      right_x = kp_r[static_cast<unsigned long>(right_idx)].pt.x;
+      //float right_y = kp_r[static_cast<unsigned long>(right_idx)].pt.y;
+
+      //pixel unit
+      //Triangulation
+      double z = (base_line_pix * fx) / (static_cast<double>(left_x) - static_cast<double>(right_x));
+      double x = (static_cast<double>(left_x) - cx)  * z / fx;
+      double y = (static_cast<double>(left_y) - cy) * z / fx;
+
+      //meter unit
+      coordinate_meter[left_idx].z = z*cam_pix_size;
+      coordinate_meter[left_idx].x = x*cam_pix_size;
+      coordinate_meter[left_idx].y = y*cam_pix_size;
+
+    }
+  }
+
+
+  //Draw featrue on input image
   void frame::draw_feature(cv::Mat &img1, cv::Mat &img2){
     img1 = img_l;
     img2 = img_r;
@@ -51,6 +98,7 @@ namespace choi {
     }
   }
 
+  //Draw feature on left, right image
   void frame::draw_feature_onframe(){
     for(std::vector<cv::KeyPoint>::size_type  i = 0; i < kp_l.size(); i++){
       cv::circle(img_l, cv::Point(static_cast<int>(kp_l[i].pt.x),static_cast<int>(kp_l[i].pt.y)), 5, cv::Scalar(255,0,255), 2, 4, 0);
@@ -59,10 +107,12 @@ namespace choi {
     }
   }
 
+  //Draw match on input image
   void frame::draw_match(cv::Mat &dst){
     cv::drawMatches(img_l,kp_l,img_r,kp_r,good_matches,dst,cv::Scalar::all(-1), cv::Scalar(-1), std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
   }
 
+  //Draw a feature using the idx of the matched feature
   void frame::draw_byFeatureIdx_onframe(int idx_l, int idx_r){
     cv::circle(img_l, cv::Point(static_cast<int>(kp_l[idx_l].pt.x),static_cast<int>(kp_l[idx_l].pt.y)), 5, cv::Scalar(255,0,255), 2, 4, 0);
     cv::circle(img_r, cv::Point(static_cast<int>(kp_r[idx_r].pt.x),static_cast<int>(kp_r[idx_r].pt.y)), 5, cv::Scalar(255,0,255), 2, 4, 0);
