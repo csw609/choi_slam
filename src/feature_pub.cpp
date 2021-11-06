@@ -154,7 +154,7 @@ int main(int argc, char **argv)
             = dynamic_cast<g2o::OptimizableGraph::Vertex*>(v_p); //edge에 point vertex를 출발 vertex로
           e->vertices()[1]
             = dynamic_cast<g2o::OptimizableGraph::Vertex*>      //edge에 pose vertex를 도착 vertex로
-            (optimizer->vertices().find(0)->second);
+            (optimizer->vertices().find(j-1)->second);
           e->setMeasurement(z);
           //e->setParameterId(0,0);
           Eigen::Matrix3d info_matrix = Eigen::Matrix3d::Identity(3,3);
@@ -177,7 +177,7 @@ int main(int argc, char **argv)
             = dynamic_cast<g2o::OptimizableGraph::Vertex*>(v_p); //edge에 point vertex를 출발 vertex로
           e2->vertices()[1]
             = dynamic_cast<g2o::OptimizableGraph::Vertex*>      //edge에 pose vertex를 도착 vertex로
-            (optimizer->vertices().find(1)->second);
+            (optimizer->vertices().find(j)->second);
           e2->setMeasurement(z2);
           //e2->setParameterId(0,0);
           Eigen::Matrix3d info_matrix2 = Eigen::Matrix3d::Identity(3,3);
@@ -198,20 +198,22 @@ int main(int argc, char **argv)
   optimizer->save("/home/csw/cv/before.g2o");
   ROS_INFO("saved?");
 
-  optimizer->optimize(50);
+  optimizer->optimize(1000);
 
-  g2o::HyperGraph::VertexIDMap::iterator v_it
-          = optimizer->vertices().find(1);
+  for(int i = 0; i < 10; i++){
+    g2o::HyperGraph::VertexIDMap::iterator v_it
+            = optimizer->vertices().find(j);
 
-  //g2o::VertexPointXYZ * posed
-  //        = dynamic_cast< g2o::VertexPointXYZ * > (v_it->second);
-  g2o::VertexSCam * posed
-          = dynamic_cast< g2o::VertexSCam * > (v_it->second);
+    //g2o::VertexPointXYZ * posed
+    //        = dynamic_cast< g2o::VertexPointXYZ * > (v_it->second);
+    g2o::VertexSCam * posed
+            = dynamic_cast< g2o::VertexSCam * > (v_it->second);
 
-  Eigen::Isometry3d second = posed->estimate();
-  Eigen::Vector3d vec = second.translation();
-  ROS_INFO("%lf  %lf   %lf",vec.x() * cam_pix_size, vec.y() * cam_pix_size, vec.z() * cam_pix_size);
-  ROS_INFO("%lf  %lf   %lf",vec.x(), vec.y(), vec.z());
+    Eigen::Isometry3d second = posed->estimate();
+    Eigen::Vector3d vec = second.translation();
+    ROS_INFO("%lf  %lf   %lf",vec.x() * cam_pix_size, vec.y() * cam_pix_size, vec.z() * cam_pix_size);
+    ROS_INFO("%lf  %lf   %lf",vec.x(), vec.y(), vec.z());
+  }
 
   ROS_INFO("saved?");
   optimizer->save("/home/csw/cv/after.g2o");
