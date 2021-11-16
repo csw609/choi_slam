@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
+  visualization_msgs
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -132,6 +134,9 @@ include_directories(
 
 add_executable(feature_pub src/feature_pub.cpp)
 target_link_libraries(feature_pub ${catkin_LIBRARIES} ${OpenCV_LIBS} ${G2O_LIBS})
+
+add_executable(3d_test src/3d_test.cpp)
+target_link_libraries(3d_test ${catkin_LIBRARIES} ${OpenCV_LIBS} ${G2O_LIBS})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}

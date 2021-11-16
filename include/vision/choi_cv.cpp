@@ -1,6 +1,6 @@
 #pragma once
 #include "vision/choi_cv.h"
-#include <iostream>
+
 
 namespace choi {
 
@@ -35,24 +35,24 @@ namespace choi {
 
   //left and right image feature matching
   void frame::feature_match(){
-    ROS_INFO("debug feature");
+    //ROS_INFO("debug feature");
     cv::Ptr<cv::DescriptorMatcher> matcher = cv::BFMatcher::create(cv::NORM_HAMMING); //need improve BF not efficient
-    ROS_INFO("debug match");
+    //ROS_INFO("debug match");
     matcher->match(des_l,des_r,matches);
-    ROS_INFO("debug feature end");
+    //ROS_INFO("debug feature end");
   }
 
   //Sort matches Descending
   void frame::sort_match(){
     std::sort(matches.begin(),matches.end());
-    std::vector<cv::DMatch> good(matches.begin(), matches.begin() + 20);
+    std::vector<cv::DMatch> good(matches.begin(), matches.begin() + 400);  //need?
     good_matches = good; //need improve
   }
 
   //Calculate 3D coordinate using Triangulation
   void frame::triangulation(){
     //camera information  //after change to define or member
-    double base_line_meter = 0.54;
+    double base_line_meter = 0.53715;
     double cam_pix_size = 4.65 * 0.000001;
     double fx = 7.215377 * 100;
     double fy = fx;
@@ -61,19 +61,25 @@ namespace choi {
 
     double base_line_pix = base_line_meter / cam_pix_size;
     int left_idx, right_idx;
-    float left_x, left_y, right_x;
+    float left_x, left_y, right_x, right_y;
 
     for(int i = 0; i < good_matches.size(); i++){
+
       left_idx  = good_matches[i].queryIdx;
       right_idx = good_matches[i].trainIdx;
 
       left_x  = kp_l[static_cast<unsigned long>(left_idx)].pt.x;
       left_y  = kp_l[static_cast<unsigned long>(left_idx)].pt.y;
       right_x = kp_r[static_cast<unsigned long>(right_idx)].pt.x;
+      right_y = kp_r[static_cast<unsigned long>(right_idx)].pt.y;
+
       //float right_y = kp_r[static_cast<unsigned long>(right_idx)].pt.y;
 
       //pixel unit
       //Triangulation
+      if(std::abs(left_x - right_x) > 40 || left_x - right_x < 2) continue; // error reject
+      if(std::abs(left_y - right_y) > 20) continue;
+
       double z = (base_line_pix * fx) / (static_cast<double>(left_x) - static_cast<double>(right_x));
       double x = (static_cast<double>(left_x) - cx)  * z / fx;
       double y = (static_cast<double>(left_y) - cy) * z / fx;
@@ -83,6 +89,7 @@ namespace choi {
       coordinate_meter[left_idx].x = x*cam_pix_size;
       coordinate_meter[left_idx].y = y*cam_pix_size;
 
+      //ROS_INFO("dp : %f", (left_x - right_x));
     }
   }
 
