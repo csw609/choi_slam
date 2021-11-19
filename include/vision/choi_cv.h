@@ -11,6 +11,7 @@
 #include <sensor_msgs/Image.h>
 #include<sensor_msgs/image_encodings.h>
 #include <cv_bridge/cv_bridge.h>
+#include <nav_msgs/OccupancyGrid.h>
 // //////////
 #include <opencv2/opencv.hpp>
 //#include <opencv2/core.hpp>
@@ -89,14 +90,14 @@ namespace choi {
     void feature_extract();
     void feature_match(); //matching left, right feature
     void sort_match(); //sort matches
-    void triangulation(); //calculate 3D coordinate
+    void triangulation(double fx = 7.215377 * 100, double cx = 6.095593*100, double cy = 1.728540*100); //calculate 3D coordinate
 
     //coordinate
     void init_pose(){pose_c2w = q_cam; pose_c2w.translation() = trans_cam;};
 
-
     //draw
-    void draw_feature(cv::Mat &img1, cv::Mat &img2);
+    void draw_feature_both(cv::Mat &img1, cv::Mat &img2);
+    void draw_feature(cv::Mat &img1);
     void draw_feature_onframe();
     void draw_match(cv::Mat &dst);
     void draw_byFeatureIdx_onframe(int idx_l, int idx_r);

@@ -35,38 +35,31 @@ namespace choi {
 
   //left and right image feature matching
   void frame::feature_match(){
-    //ROS_INFO("debug feature");
-    cv::Ptr<cv::DescriptorMatcher> matcher = cv::BFMatcher::create(cv::NORM_HAMMING); //need improve BF not efficient
-    //ROS_INFO("debug match");
+    cv::Ptr<cv::DescriptorMatcher> matcher = cv::BFMatcher::create(cv::NORM_HAMMING,true); //need improve BF not efficient
     matcher->match(des_l,des_r,matches);
-    //ROS_INFO("debug feature end");
   }
 
   //Sort matches Descending
   void frame::sort_match(){
     std::sort(matches.begin(),matches.end());
-    std::vector<cv::DMatch> good(matches.begin(), matches.begin() + 400);  //need?
-    good_matches = good; //need improve
   }
 
   //Calculate 3D coordinate using Triangulation
-  void frame::triangulation(){
+  void frame::triangulation(double fx, double cx, double cy){//defalue kitti 2011-09-26
     //camera information  //after change to define or member
     double base_line_meter = 0.53715;
     double cam_pix_size = 4.65 * 0.000001;
-    double fx = 7.215377 * 100;
     double fy = fx;
-    double cx = 6.095593*100;
-    double cy = 1.728540*100;
 
     double base_line_pix = base_line_meter / cam_pix_size;
+
     int left_idx, right_idx;
     float left_x, left_y, right_x, right_y;
 
-    for(int i = 0; i < good_matches.size(); i++){
+    for(int i = 0; i < matches.size(); i++){
 
-      left_idx  = good_matches[i].queryIdx;
-      right_idx = good_matches[i].trainIdx;
+      left_idx  = matches[i].queryIdx;
+      right_idx = matches[i].trainIdx;
 
       left_x  = kp_l[static_cast<unsigned long>(left_idx)].pt.x;
       left_y  = kp_l[static_cast<unsigned long>(left_idx)].pt.y;
@@ -78,7 +71,7 @@ namespace choi {
       //pixel unit
       //Triangulation
       if(std::abs(left_x - right_x) > 40 || left_x - right_x < 2) continue; // error reject
-      if(std::abs(left_y - right_y) > 20) continue;
+      //if(std::abs(left_y - right_y) > 20) continue;
 
       double z = (base_line_pix * fx) / (static_cast<double>(left_x) - static_cast<double>(right_x));
       double x = (static_cast<double>(left_x) - cx)  * z / fx;
@@ -95,13 +88,21 @@ namespace choi {
 
 
   //Draw featrue on input image
-  void frame::draw_feature(cv::Mat &img1, cv::Mat &img2){
+  void frame::draw_feature_both(cv::Mat &img1, cv::Mat &img2){
     img1 = img_l;
     img2 = img_r;
     for(std::vector<cv::KeyPoint>::size_type  i = 0; i < kp_l.size(); i++){
       cv::circle(img1, cv::Point(static_cast<int>(kp_l[i].pt.x),static_cast<int>(kp_l[i].pt.y)), 5, cv::Scalar(255,0,255), 2, 4, 0);
       cv::circle(img2, cv::Point(static_cast<int>(kp_r[i].pt.x),static_cast<int>(kp_r[i].pt.y)), 5, cv::Scalar(255,0,255), 2, 4, 0);
       //ROS_INFO("%d : %lf",static_cast<int>(i), static_cast<double>(kp[i].response));
+    }
+  }
+
+  //Draw featrue on input image
+  void frame::draw_feature(cv::Mat &img1){
+    //img1 = img_l;
+    for(std::vector<cv::KeyPoint>::size_type  i = 0; i < kp_l.size(); i++){
+      cv::circle(img1, cv::Point(static_cast<int>(kp_l[i].pt.x),static_cast<int>(kp_l[i].pt.y)), 5, cv::Scalar(255,0,255), 2, 4, 0);
     }
   }
 

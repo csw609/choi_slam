@@ -1,0 +1,9 @@
+<launch>
+
+    <node name="slam_0027"   pkg="choi_slam"  type="slam_0027" output="screen">
+    </node>
+
+    <!-- run the preset rviz -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d /home/csw/catkin_ws/src/choi_slam/rviz/simulation.rviz" />
+
+</launch>

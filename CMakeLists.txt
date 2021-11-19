@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   visualization_msgs
   geometry_msgs
+  nav_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -132,11 +133,11 @@ include_directories(
   ${G2O_INCLUDE_DIR}
 )
 
-add_executable(feature_pub src/feature_pub.cpp)
-target_link_libraries(feature_pub ${catkin_LIBRARIES} ${OpenCV_LIBS} ${G2O_LIBS})
+add_executable(slam_0039 src/slam_0039.cpp)
+target_link_libraries(slam_0039 ${catkin_LIBRARIES} ${OpenCV_LIBS} ${G2O_LIBS})
 
-add_executable(3d_test src/3d_test.cpp)
-target_link_libraries(3d_test ${catkin_LIBRARIES} ${OpenCV_LIBS} ${G2O_LIBS})
+add_executable(slam_0027 src/slam_0027.cpp)
+target_link_libraries(slam_0027 ${catkin_LIBRARIES} ${OpenCV_LIBS} ${G2O_LIBS})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
