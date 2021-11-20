@@ -5,6 +5,9 @@
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/Point.h"
 
+#include "fstream"
+#include "sstream"
+
 
 // #include "g2o/types/sba/types_six_dof_expmap.h"
 
@@ -39,9 +42,9 @@ int main(int argc, char **argv)
   map.header.seq = 1;
   map.header.stamp.sec = 0;
   map.header.stamp.nsec = 0;
-  map.info.width = 250;
+  map.info.width = 450;
   map.info.height = 500;
-  map.info.origin.position.x = -125;
+  map.info.origin.position.x = -225;
   map.info.origin.position.y = 0;
   map.info.origin.orientation.w = 1.0;
   map.info.origin.orientation.x = 0.0;
@@ -118,8 +121,14 @@ int main(int argc, char **argv)
   ros::Rate loop_rate(20);
   std_msgs::Header header;
   unsigned long j = 0;
+
+  //ground truth
+  std::string str_odom;
+  std::ifstream odom("/home/csw/cv/pro/odom.txt");
+
   while (ros::ok())
   {
+
 
     //ROS_INFO("debug %d", j);
     std::string img_l_path;
@@ -338,8 +347,39 @@ int main(int argc, char **argv)
             static_cast<unsigned long>(x_world-map.info.origin.position.x+k)] = 0;
       }
     }
+    if(j < frame_number-1){
+      std::getline(odom,str_odom);
 
-    if(j < frame_number-1)  j++;
+      std::vector<std::string> odom_token;
+      std::istringstream odom_stream(str_odom);
+      std::string stringBuffer;
+      odom_token.clear();
+      while(getline(odom_stream,stringBuffer,' ')){
+        odom_token.push_back(stringBuffer);
+      }
+
+      double ground_x = std::stod(odom_token[3].c_str());
+      double ground_y = std::stod(odom_token[11].c_str());
+
+      //draw ground truth point on map
+      for(int i = -1; i < 2; i++){
+        for(int k = -1; k < 2; k++){
+          if (z_world+i < 0 || z_world+i > map.info.height || x_world-map.info.origin.position.x+k < 0
+              || x_world-map.info.origin.position.x+k > map.info.width ) continue;
+
+          map.data[static_cast<unsigned long>(ground_y+i)*static_cast<unsigned long>(map.info.width) +
+              static_cast<unsigned long>(ground_x-map.info.origin.position.x+k)] = 100;
+        }
+      }
+
+      ROS_INFO("%lf",ground_x);
+      ROS_INFO("%lf",ground_y);
+      j++;
+
+    }
+
+
+
 
 
     ros::spinOnce();
