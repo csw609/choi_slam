@@ -3,7 +3,6 @@
 
 ## Enviroment  
 
-|팀원|맡은 역할|
 |:---:|:---:|
 |OS| Ubuntu 18.04 |
 |Software|ROS Melodic|
