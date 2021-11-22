@@ -1,4 +1,5 @@
-# SLAM Project
+# 2021-SECOND-BARAM-PROJECT
+#VISUAL SLAM
 
 ### Enviroment : Ubuntu 18.04
 
