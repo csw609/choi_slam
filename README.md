@@ -5,7 +5,7 @@
 
 |OS|Language|Software|Libraries|
 |:---:|:---:|:---:|:---:|
-|Ubuntu 18.04|C++|ROS Melodic|OpenCV|  
+|Ubuntu 18.04|C++|ROS Melodic|OpenCV 3.2.0|  
 
 ## System Architecture
 
