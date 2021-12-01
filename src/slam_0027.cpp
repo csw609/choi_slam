@@ -234,7 +234,6 @@ int main(int argc, char **argv)
       Eigen::Matrix3d prev2cur_rot;
 
       cv::cv2eigen(R_c,prev2cur_rot);
-      //ROS_INFO("x=%lf, y=%lf, z=%lf ,  frame%d", p_c[0]*cam_pix_size, p_c[1]*cam_pix_size, p_c[2]*cam_pix_size, static_cast<int>(j));
 
       //if reliable
       if(std::abs(prev2cur_trans.x()) < 1.0 && std::abs(prev2cur_trans.y()) < 0.35 && std::abs(prev2cur_trans.z()) < 1.0){
