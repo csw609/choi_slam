@@ -1,7 +1,7 @@
 # VISUAL SLAM
 ## 2021-SECOND-BARAM-PROJECT 
 
-## Enviroment  
+## Environment  
 
 |OS|Language|Software|Libraries|
 |:---:|:---:|:---:|:---:|
