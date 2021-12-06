@@ -133,6 +133,7 @@ int main(int argc, char **argv)
     //ROS_INFO("debug %d", j);
     std::string img_l_path;
     std::string img_r_path;
+    //read image
     if(j < 10){
       img_l_path = "/home/csw/cv/pro/00.txt.d/camera_left.image_raw_0000000" + std::to_string(j) +".pgm";
       img_r_path = "/home/csw/cv/pro/00.txt.d/camera_right.image_raw_0000000" + std::to_string(j) +".pgm";
